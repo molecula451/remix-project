@@ -27,9 +27,21 @@ export function ContractDropdownUI (props: ContractDropdownProps) {
   const [loadedContractData, setLoadedContractData] = useState<ContractData>(null)
   const [constructorInterface, setConstructorInterface] = useState<FuncABI>(null)
   const [constructorInputs, setConstructorInputs] = useState(null)
+  const [currentSource, setCurrentSource] = useState("remix")
   const contractsRef = useRef<HTMLSelectElement>(null)
   const atAddressValue = useRef<HTMLInputElement>(null)
-  const { contractList, loadType, currentFile, compilationSource, currentContract, compilationCount, deployOptions, proxyKey } = props.contracts
+  let { contractList, loadType, currentFile, compilationSource, currentContract, compilationCount, deployOptions, proxyKey } = props.contracts
+
+  useEffect(() => {
+    contractList = props.contracts.contractList
+    loadType = props.contracts.loadType
+    currentFile = props.contracts.currentFile
+    compilationSource = props.contracts.compilationSource
+    currentContract = props.contracts.currentContract
+    compilationCount = props.contracts.compilationCount
+    deployOptions = props.contracts.deployOptions
+    proxyKey = props.contracts.proxyKey
+  }, [setCurrentSource])
 
   useEffect(() => {
     enableContractNames(Object.keys(props.contracts.contractList).length > 0)
@@ -97,6 +109,7 @@ export function ContractDropdownUI (props: ContractDropdownProps) {
 
   useEffect(() => {
     initSelectedContract()
+    console.log("contrcctList is ", contractList)
   }, [contractList])
 
   useEffect(() => {
@@ -238,21 +251,44 @@ export function ContractDropdownUI (props: ContractDropdownProps) {
   return (
     <div className="udapp_container" data-id="contractDropdownContainer">
       <div className='d-flex justify-content-between'>
-        <div className="d-flex justify-content-between align-items-end">
-          <label className="udapp_settingsLabel pr-1">Contract</label>
-          <div className="d-flex">{ Object.keys(props.contracts.contractList).length > 0 && compilationSource !== '' && <label className="text-capitalize" style={{maxHeight: '0.6rem', lineHeight: '1rem'}} data-id="udappCompiledBy">(Compiled by {compilationSource})</label>}</div>
-        </div>
-        <OverlayTrigger placement={'right'} overlay={
-          <Tooltip className="text-nowrap" id="info-sync-compiled-contract">
-            <div>Click here to import contracts compiled from an external framework.</div>
-            <div>This action is enabled when Remix is connected to an external framework (hardhat, truffle, foundry) through remixd.</div>                  
-          </Tooltip>
-        }>
-          <button className="btn d-flex py-0" onClick={_ => props.syncContracts()}>
-            <i style={{ cursor: 'pointer' }} className="fa fa-refresh mr-2 mt-2" aria-hidden="true"></i>
-            <label data-id="" className="mt-2">HardHat</label>
-          </button>
-        </OverlayTrigger>
+        <label className="udapp_settingsLabel pr-1">Contract</label>
+
+        { Object.keys(props.contracts.contractList).length > 0 && compilationSource !== '' && <div
+          data-toggle="buttons"
+          className="btn-group btn-group-toggle"
+          >
+            <OverlayTrigger placement={'top'} overlay={
+              <Tooltip className="text-nowrap" id="info-sync-compiled-contract">
+                <div>Use contracts compiled by Remix.</div>
+              </Tooltip>
+            }>
+              <label
+                className={"btn text-capitalize" + (currentSource === "remix") ? "border " : ""}
+                data-id="udappCompiledBy"
+              >
+                <input type="radio" checked={currentSource === "remix"} name="options" id="optionRemix" onClick={_ => setCurrentSource("remix")} />
+                Remix
+              </label>
+            </OverlayTrigger>
+
+            <OverlayTrigger placement={'top'} overlay={
+              <Tooltip className="text-nowrap" id="info-sync-compiled-contract">
+                <div>Import contracts compiled from an external framework(Hardhat, Truffle, Foundry).</div>
+              </Tooltip>
+            }>
+              <label className={"btn " + (currentSource !== "remix") ? "border " : ""}>
+                <input type="radio" checked={currentSource !== "remix"} name="options" id="optionExternal"  onClick={_ => {
+                  setCurrentSource(compilationSource)
+                  console.log("mmmm- ", compilationSource)
+                  props.syncContracts()}
+                } />
+                External
+              </label>
+            </OverlayTrigger>
+          </div>
+        }
+        <i style={{ cursor: 'pointer' }} className="fa fa-refresh mr-2 mt-1" aria-hidden="true"></i>
+
       </div>
       <div className="udapp_subcontainer">
        <select ref={contractsRef} value={currentContract} onChange={handleContractChange} className="udapp_contractNames custom-select" disabled={contractOptions.disabled} title={contractOptions.title} style={{ display: loadType === 'abi' && !isContractFile(currentFile) ? 'none' : 'block' }}>
