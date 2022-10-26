@@ -85,6 +85,10 @@ export function Workspace () {
     global.modal('Clone Git Repository', cloneModalMessage(), 'OK', handleTypingUrl, '')
   }
 
+  const addGithubAction = () => {
+    global.dispatchCreateSolidityGithubAction()
+  }
+
   const downloadWorkspaces = async () => {
     try {
       await global.dispatchHandleDownloadFiles()
@@ -531,6 +535,40 @@ export function Workspace () {
         <span className="pl-3">{'Restore'}</span>
       </div>
     </OverlayTrigger>,
+    <Dropdown.Divider className="border mt-0 mb-0 remixui_menuhr" style={{ pointerEvents: 'none' }}/>,
+    <OverlayTrigger
+    placement="right-start"
+    overlay={
+      <Tooltip id="soliditygithubactionTooltip" className="text-nowrap">
+        <span>Add Soldity Unit testing github action to the current workspace</span>
+      </Tooltip>
+    }
+  >
+    <div
+      data-id='soliditygithubaction'
+      onClick={(e) => {
+        e.stopPropagation()
+        addGithubAction()
+        _paq.push(['trackEvent', 'fileExplorer', 'workspaceMenu', 'addSolidityTesting'])
+        hideIconsMenu(!showIconsMenu)
+      }}
+    >
+      <span
+        hidden={currentWorkspace === LOCALHOST}
+        id='soliditygithubaction'
+        data-id='soliditygithubaction'
+        onClick={(e) => {
+          e.stopPropagation()
+          addGithubAction()
+          _paq.push(['trackEvent', 'fileExplorer', 'workspaceMenu', 'addSolidityTesting'])
+          hideIconsMenu(!showIconsMenu)
+        }}
+        className='fab fa-github pl-2'
+      >
+      </span>
+      <span className="pl-3">{'Add Soldity Unit test github action'}</span>
+    </div>
+  </OverlayTrigger>,
   ]
 
   return (
